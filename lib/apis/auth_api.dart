@@ -2,17 +2,27 @@ import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart' as model;
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+// ignore: unnecessary_import
+import 'package:twitter_clone/core/providers.dart';
 import '../core/core.dart';
 
 final authAPIProvider = Provider((ref) {
   final account = ref.watch(appwriteAccountProvider);
   return AuthAPI(account: account);
 });
+
 abstract class IAuthAPI {
   FutureEither<model.User> signUp({
     required String email,
     required String password,
   });
+
+  FutureEither<model.Session> login({
+    required String email,
+    required String password,
+  });
+
+  Future<model.User?> currentUserAccount();
 }
 
 class AuthAPI implements IAuthAPI {
@@ -28,6 +38,7 @@ class AuthAPI implements IAuthAPI {
         email: email,
         password: password,
       );
+
       return right(account);
     } on AppwriteException catch (e, stackTrace) {
       return left(
@@ -37,6 +48,40 @@ class AuthAPI implements IAuthAPI {
       return left(
         Failure(e.toString(), stackTrace),
       );
+    }
+  }
+
+  @override
+  FutureEither<model.Session> login({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final session = await _account.createEmailSession(
+        email: email,
+        password: password,
+      );
+
+      return right(session);
+    } on AppwriteException catch (e, stackTrace) {
+      return left(
+        Failure(e.message ?? 'Some unexpected error occured', stackTrace),
+      );
+    } catch (e, stackTrace) {
+      return left(
+        Failure(e.toString(), stackTrace),
+      );
+    }
+  }
+
+  @override
+  Future<model.User?> currentUserAccount() async {
+    try {
+      return await _account.get();
+    } on AppwriteException catch (e) {
+      return null;
+    } catch (e) {
+      return null;
     }
   }
 }
