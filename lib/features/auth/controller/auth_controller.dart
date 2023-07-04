@@ -9,9 +9,15 @@ final authControllerProvider =
     authAPI: ref.watch(authAPIProvider),
   );
 });
+final currentUserAccountProvider = FutureProvider((ref) {
+  final authController = ref.watch(authControllerProvider.notifier);
+  return authController.currentUser();
+});
+
 
 class AuthController extends StateNotifier<bool> {
   final AuthAPI _authAPI;
+  
   AuthController({required AuthAPI authAPI})
       : _authAPI = authAPI,
         super(false);
@@ -55,5 +61,14 @@ class AuthController extends StateNotifier<bool> {
       (r) => print(r.userId),
     );
   }
+  
+final currentUserAccountProvider = FutureProvider((ref) {
+  final authController = ref.watch(authControllerProvider.notifier);
+  return authController.currentUser();
+});
+
+  currentUser() {}
+
 }
+
 
